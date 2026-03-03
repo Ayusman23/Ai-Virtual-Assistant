@@ -51,7 +51,7 @@ J.A.R.V.I.S is a highly capable, professional, and real-time AI voice assistant 
 Experience J.A.R.V.I.S in action:
 
 <p align="center">
-  <video src="assets/Minor.mp4" width="100%" controls>
+  <video src="assets/minor.mp4" width="100%" controls>
     Your browser does not support the video tag.
   </video>
 </p>
