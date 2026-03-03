@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Auth System</title>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --background-color: #f8f9fa;
+            --card-color: #ffffff;
+            --border-radius: 8px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #343a40;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: var(--card-color);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease-in-out;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-top: 10px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .switch-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Toggles */
+        #registrationForm {
+            display: none;
+        }
+
+        /* Face Recognition UI */
+        .webcam-container {
+            margin-top: 15px;
+            text-align: center;
+            border: 2px dashed #adb5bd;
+            border-radius: var(--border-radius);
+            padding: 10px;
+        }
+
+        #webcamVideo {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 4px;
+            background-color: #333;
+            transform: scaleX(-1); /* Mirror effect */
+            display: none; 
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            
+            <form id="loginForm">
+                <h2>User Login</h2>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+
+                <div class="webcam-container">
+                    <p id="loginText">Click 'Face Login' to start webcam.</p>
+                    <video id="webcamVideoLogin" autoplay></video>
+                    <canvas id="faceCaptureLogin" class="hidden"></canvas>
+                </div>
+                
+                <button type="button" class="btn-primary" onclick="startLoginFaceAuth()">
+                    <span id="loginBtnText">Face Login</span>
+                </button>
+
+                <p class="switch-link">
+                    Don't have an account? 
+                    <a href="#" onclick="switchForm('register')">Register here</a>.
+                </p>
+            </form>
+
+            <form id="registrationForm">
+                <h2>User Registration</h2>
+                <div class="form-group">
+                    <label for="regUsername">Username</label>
+                    <input type="text" id="regUsername" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" placeholder="Enter email" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" placeholder="Set password" required>
+                </div>
+                
+                <div class="webcam-container">
+                    <p id="regText">Click 'Add Face' to start webcam.</p>
+                    <video id="webcamVideoReg" autoplay></video>
+                    <canvas id="faceCaptureReg" class="hidden"></canvas>
+                </div>
+
+                <button type="button" class="btn-primary" onclick="startRegistrationFaceAdd()">
+                    <span id="regBtnText">Add Face</span>
+                </button>
+                
+                <button type="submit" class="btn-secondary" disabled id="registerSubmitBtn">
+                    Register
+                </button>
+
+                <p class="switch-link">
+                    Already have an account? 
+                    <a href="#" onclick="switchForm('login')">Login here</a>.
+                </p>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT LOGIC ---
+
+        const loginForm = document.getElementById('loginForm');
+        const registrationForm = document.getElementById('registrationForm');
+        const regVideo = document.getElementById('webcamVideoReg');
+        const regCanvas = document.getElementById('faceCaptureReg');
+        const regBtnText = document.getElementById('regBtnText');
+        const regText = document.getElementById('regText');
+        const registerSubmitBtn = document.getElementById('registerSubmitBtn');
+        const loginVideo = document.getElementById('webcamVideoLogin');
+        const loginBtnText = document.getElementById('loginBtnText');
+        const loginText = document.getElementById('loginText');
+
+        let currentStream = null;
+        let faceAdded = false;
+
+        // 1. DYNAMIC FORM SWITCHING
+        /**
+         * Switches between the Login and Registration forms.
+         * @param {string} mode - 'login' or 'register'.
+         */
+        function switchForm(mode) {
+            // Stop any active webcam stream
+            stopWebcam(); 
+
+            if (mode === 'login') {
+                loginForm.style.display = 'block';
+                registrationForm.style.display = 'none';
+                loginText.textContent = "Click 'Face Login' to start webcam.";
+                loginBtnText.textContent = "Face Login";
+            } else {
+                loginForm.style.display = 'none';
+                registrationForm.style.display = 'block';
+                regText.textContent = "Click 'Add Face' to start webcam.";
+                regBtnText.textContent = "Add Face";
+                registerSubmitBtn.disabled = true;
+                faceAdded = false;
+            }
+        }
+
+        // 2. WEBCAM AND FACE CAPTURE LOGIC
+
+        /**
+         * Starts the webcam and streams video to the specified element.
+         * @param {HTMLVideoElement} videoElement - The video element to stream to.
+         * @param {HTMLElement} textElement - The text element to update.
+         */
+        async function startWebcam(videoElement, textElement) {
+            if (currentStream) {
+                stopWebcam();
+                // If clicked again, it's for stopping, so return early
+                return; 
+            }
+            
+            try {
+                // Request camera access
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                currentStream = stream;
+                videoElement.srcObject = stream;
+                videoElement.style.display = 'block';
+                textElement.textContent = "Webcam active. Capturing face...";
+                
+            } catch (err) {
+                console.error("Error accessing the camera:", err);
+                alert("Could not access webcam. Please allow camera permissions.");
+                textElement.textContent = "Camera access denied.";
+            }
+        }
+
+        /**
+         * Stops the active webcam stream.
+         */
+        function stopWebcam() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            if (regVideo) regVideo.style.display = 'none';
+            if (loginVideo) loginVideo.style.display = 'none';
+        }
+
+        /**
+         * Simulates capturing the face image (for registration).
+         */
+        function captureFace(video, canvas) {
+            if (!currentStream) return;
+
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            
+            // Draw the current video frame onto the canvas (mirrored)
+            context.translate(canvas.width, 0);
+            context.scale(-1, 1);
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // In a real application, you'd send this base64 data to the server
+            const imageDataURL = canvas.toDataURL('image/png');
+            console.log("Captured Image Data (Simulated Send to Server):", imageDataURL.substring(0, 50) + "...");
+
+            // Update UI for registration
+            regText.textContent = "Face image captured! Ready to register.";
+            regBtnText.textContent = "Re-take Face";
+            registerSubmitBtn.disabled = false;
+            faceAdded = true;
+            stopWebcam(); // Stop after successful capture
+        }
+
+
+        // 3. HANDLER FUNCTIONS
+
+        /**
+         * Handler for the "Add Face" button in the registration form.
+         */
+        function startRegistrationFaceAdd() {
+            if (currentStream) {
+                stopWebcam();
+                regVideo.style.display = 'none';
+                regText.textContent = "Click 'Add Face' to start webcam.";
+                regBtnText.textContent = "Add Face";
+                registerSubmitBtn.disabled = true;
+                faceAdded = false;
+            } else {
+                startWebcam(regVideo, regText).then(() => {
+                    // Start capture after a short delay to allow stream to stabilize
+                    if (currentStream) {
+                        setTimeout(() => captureFace(regVideo, regCanvas), 2000);
+                        regBtnText.textContent = "Processing..."; // Indicate capture is happening
+                    }
+                });
+            }
+        }
+
+        /**
+         * Handler for the "Face Login" button in the login form.
+         */
+        function startLoginFaceAuth() {
+            if (currentStream) {
+                stopWebcam();
+                loginVideo.style.display = 'none';
+                loginBtnText.textContent = "Face Login";
+                loginText.textContent = "Click 'Face Login' to start webcam.";
+            } else {
+                startWebcam(loginVideo, loginText).then(() => {
+                    if (currentStream) {
+                        loginBtnText.textContent = "Authenticating...";
+                        // Simulate the authentication process
+                        setTimeout(simulateFaceAuthentication, 3000); 
+                    }
+                });
+            }
+        }
+
+
+        // 4. SIMULATION LOGIC
+
+        /**
+         * Simulates the server-side face authentication.
+         */
+        function simulateFaceAuthentication() {
+    stopWebcam();
+            
+    const success = Math.random() < 0.7; 
+
+    if (success) {
+        alert("✅ Face Authentication Successful! Redirecting...");
+        loginText.textContent = "Authentication Successful!";
+        
+        // Redirect to homepage
+        window.location.href = "index.html";
+    } else {
+        alert("❌ Face Authentication Failed! Please try again.");
+        loginText.textContent = "Authentication Failed. Try again.";
+    }
+    loginBtnText.textContent = "Face Login";
+}
+
+
+
+        // 5. REGISTRATION SUBMISSION (Simulated)
+        registrationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!faceAdded) {
+                alert("Please add your face using the 'Add Face' button first.");
+                return;
+            }
+            
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            // Password and face data would be sent here
+            
+            // SIMULATED BACK-END CALL
+            console.log(`Simulating registration for User: ${username}, Email: ${email}`);
+            alert(`Registration successful for ${username}! Please log in.`);
+            
+            // After successful registration, switch to login form
+            switchForm('login'); 
+        });
+
+
+        // Initialize the view to the login form
+        switchForm('login');
+    </script>
+</body>
+</html>
