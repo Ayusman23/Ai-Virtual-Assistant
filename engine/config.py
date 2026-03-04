@@ -1,3 +1,3 @@
 ASSISTANT_NAME = "jarvis"
-PICOVOICE_ACCESS_KEY = "3UFDEAFlXJ3j9fGaAvua1ze4qB99wFdGwjb06hO3dKcyjISy/nSYtA==" 
-LLM_KEY = "AIzaSyCWegRNliqbd0HvIVZ021G3AyLX5mD7Ifs"
+PICOVOICE_ACCESS_KEY = "your-piconvoice-apikey" 
+LLM_KEY = "Your-LLM-key"
