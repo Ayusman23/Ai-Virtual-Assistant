@@ -42,7 +42,7 @@ J.A.R.V.I.S is a highly capable, professional, and real-time AI voice assistant 
 ### Assistant Settings & Backend
 <p align="center">
   <img src="assets/f83842ed-5723-4f5b-9b46-6a7ae37c8a40.png" width="45%" alt="Settings" />
-  <img src="assets/cca87d0d-2dba-46ab-bc38-1b4bc5317796.jpg" width="45%" alt="Codebase" />
+  
 </p>
 
 ---
